@@ -4,21 +4,29 @@ const PORT = 8080;
 
 app.set("view engine", "ejs");
 
-const urlDatabase = {
+let urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com",
 }
 
 // Function that generates random strings
-function generateRandomString() {
-  const result = Math.random().toString(36).substring(2,8);
+const random = function generateRandomString() {
+  return Math.random().toString(36).substring(2,8);
 }
 
 app.use(express.urlencoded({ extended: true }));
 
 app.post("/urls", (req, res) => {
-  console.log(req.body); // Log the POST request body to the console
-  res.send("Ok"); // Respond with 'Ok' (we will replace this)
+  const ran = random();
+  urlDatabase[`${ran}`] = req.body.longURL;
+  // console.log(req.body); // Log the POST request body to the console
+  // res.send("Ok"); // Respond with 'Ok' (we will replace this)
+  res.redirect(`/urls/:${ran}`);
+});
+
+app.get("/u/:id", (req, res) => {
+  const longURL = urlDatabase[`${req.params.id}`];
+  res.redirect(longURL);
 });
 
 app.get("/", (req, res) => {
