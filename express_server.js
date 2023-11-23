@@ -33,10 +33,9 @@ app.post("/urls/:id/delete", (req, res) => {
   res.redirect("/urls");
 })
 
-// For editing urls ???
+// For editing urls
 app.post("/urls/:id", (req, res) => {
   urlDatabase[`${req.params.id}`] = req.body.longURL
-  // console.log(req.body.longURL); //THIS is correct
   res.redirect("/urls");
 })
 
