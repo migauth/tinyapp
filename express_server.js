@@ -33,16 +33,26 @@ app.post("/urls/:id/delete", (req, res) => {
   res.redirect("/urls");
 })
 
+// For editing urls ???
+app.post("/urls/:id", (req, res) => {
+  urlDatabase[`${req.params.id}`] = req.body.longURL
+  // console.log(req.body.longURL); //THIS is correct
+  res.redirect("/urls");
+})
+
+// Redirects user to longURL site when using id
 app.get("/u/:id", (req, res) => {
   const longURL = urlDatabase[`${req.params.id}`];
   res.redirect(longURL);
 });
 
+// My URLS page
 app.get("/urls", (req, res) => {
   const templateVars = { urls: urlDatabase};
   res.render("urls_index", templateVars);
 });
 
+// Create new tinyURL page
 app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
