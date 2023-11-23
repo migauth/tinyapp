@@ -31,7 +31,7 @@
         </thead>
         <tbody>
           <% for (let id in urls) { %>
-            <form method="POST" action="/urls/<%= id %>/delete"> <!--edited here-->
+            <form method="POST" action="/urls/<%= id %>/delete"> 
             <tr>
                 <td><%= id %></td>
                 <td><%= urls[id] %></td>
