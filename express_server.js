@@ -39,6 +39,13 @@ app.post("/urls/:id", (req, res) => {
   res.redirect("/urls");
 })
 
+// For login
+app.post("/login/", (req, res) => {
+  const username = req.body.username;
+  res.cookie(username);
+  res.redirect("/urls");
+})
+
 // Redirects user to longURL site when using id
 app.get("/u/:id", (req, res) => {
   const longURL = urlDatabase[`${req.params.id}`];
