@@ -55,6 +55,12 @@ app.post("/logout", (req, res) => {
   res.redirect("/urls");
 })
 
+// // For logout
+// app.post("/register", (req, res) => {
+//   res.clearCookie('username');
+//   res.redirect("/urls");
+// })
+
 // Redirects user to longURL site when using id
 app.get("/u/:id", (req, res) => {
   const longURL = urlDatabase[`${req.params.id}`];
@@ -79,7 +85,7 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new", templateVars);
 });
 
-// 
+// Edit page?
 app.get("/urls/:id", (req, res) => {
   const templateVars = { 
     id: req.params.id, 
@@ -89,17 +95,20 @@ app.get("/urls/:id", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
+// 
+app.get("/register", (req, res) => {
+  const templateVars = { 
+    id: req.params.id, 
+    longURL: urlDatabase[`${req.params.id}`],
+    username: req.cookies["username"]}
+    ;
+  res.render("register", templateVars);
+});
+
+
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
-
-// app.get("/", (req, res) => {
-//   res.send("Hello!");
-// });
-
-// app.get("/hello", (req, res) => {
-//   res.send("<html><body>Hello <b>World</b></body></html>\n");
-// });
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
