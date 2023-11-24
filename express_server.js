@@ -49,6 +49,12 @@ app.post("/login", (req, res) => {
   res.redirect("/urls");
 })
 
+// For logout
+app.post("/logout", (req, res) => {
+  res.clearCookie('username');
+  res.redirect("/urls");
+})
+
 // Redirects user to longURL site when using id
 app.get("/u/:id", (req, res) => {
   const longURL = urlDatabase[`${req.params.id}`];
