@@ -2,6 +2,8 @@ const express = require("express");
 const app = express();
 const PORT = 8080;
 
+const cookieParser = require("cookie-parser")
+
 app.set("view engine", "ejs");
 
 
@@ -18,6 +20,7 @@ const random = function generateRandomString() {
 
 // 
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 
 // Generates a random string for the id, updates the database with the id - longURL key value pair
@@ -40,9 +43,9 @@ app.post("/urls/:id", (req, res) => {
 })
 
 // For login
-app.post("/login/", (req, res) => {
-  const username = req.body.username;
-  res.cookie(username);
+app.post("/login", (req, res) => {
+  const user = req.body.user;
+  res.cookie('username', user);
   res.redirect("/urls");
 })
 
@@ -54,17 +57,29 @@ app.get("/u/:id", (req, res) => {
 
 // My URLS page
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase};
+  const templateVars = { 
+    urls: urlDatabase,
+    username: req.cookies["username"]
+  };
   res.render("urls_index", templateVars);
 });
 
 // Create new tinyURL page
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  const templateVars = { 
+    urls: urlDatabase,
+    username: req.cookies["username"]
+  };
+  res.render("urls_new", templateVars);
 });
 
+// 
 app.get("/urls/:id", (req, res) => {
-  const templateVars = { id: req.params.id, longURL: urlDatabase[`${req.params.id}`]};
+  const templateVars = { 
+    id: req.params.id, 
+    longURL: urlDatabase[`${req.params.id}`],
+    username: req.cookies["username"]}
+    ;
   res.render("urls_show", templateVars);
 });
 
