@@ -24,14 +24,17 @@
           <label for=""></label>
           <button type="submit" class="btn btn-outline-dark">Logout</button>
       <% } else { %>
-      <form action="/login" method="POST">  
+      <!-- <form action="/login" method="POST">  
         <label for=""></label>
         <input type="text"
                name="user" 
                placeholder="Username" 
                style="width: 300px; margin: 1em"
-        />
-        <button type="submit" class="btn btn-outline-dark">Login</button>
+        /> -->
+        <a class="nav-item nav-link" href="/login">Login</a>
+        <a class="nav-item nav-link" href="/register">Register</a>
+        <!-- <button type="submit" class="btn btn-outline-dark">Login</button>
+        <button type="submit" class="btn btn-outline-dark">Register</button> -->
         <% } %>
 
       </form>
