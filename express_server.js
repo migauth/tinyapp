@@ -19,7 +19,14 @@ const users = {
   user2RandomID: { id: "user2RandomID", email: "user2@example.com", password: "dishwasher-funk" }
 };
 
-
+// const getUserByEmail = function(email) {
+//   for (const key in users) {
+//     if (users[key].email === user.email) {
+//       return user;
+//     }
+//   }
+//   return null;
+// }
 
 // Function that generates random strings
 const random = function generateRandomString() {
@@ -71,6 +78,16 @@ app.post("/register", (req, res) => { //this is where the random id generates
       email: req.body.email,
       password: req.body.password
     }
+
+  if (user.email === "" || user.password === "") {
+    res.status(400).send('Empty email and/or password field');
+  }
+
+  for (const key in users) {
+    if (users[key].email === user.email) {
+      res.status(400).send('Email already in use');
+    }
+  }
 
   users[`${ran}`] = user;
   console.log(users);
