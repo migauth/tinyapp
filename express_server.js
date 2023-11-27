@@ -37,6 +37,8 @@ const random = function generateRandomString() {
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+//-----------------POSTS-------------------------
+
 
 // Generates a random string for the id, updates the database with the id - longURL key value pair
 app.post("/urls", (req, res) => {
@@ -95,6 +97,10 @@ app.post("/register", (req, res) => { //this is where the random id generates
   res.redirect("/urls");
 })
 
+
+
+//-----------------GETS-------------------------
+
 // Redirects user to longURL site when using id
 app.get("/u/:id", (req, res) => {
   const longURL = urlDatabase[`${req.params.id}`];
@@ -135,7 +141,7 @@ app.get("/urls/:id", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
-// 
+// Register page
 app.get("/register", (req, res) => {
   let user_id = req.cookies["user_id"]
   const templateVars = { 
@@ -143,10 +149,20 @@ app.get("/register", (req, res) => {
     longURL: urlDatabase[`${req.params.id}`],
     user: users[user_id]
     };
-
-    //insert the randomized id here?
   
     res.render("register", templateVars);
+});
+
+// Login page
+app.get("/login", (req, res) => {
+  let user_id = req.cookies["user_id"]
+  const templateVars = { 
+    id: req.params.id, 
+    longURL: urlDatabase[`${req.params.id}`],
+    user: users[user_id]
+    };
+  
+    res.render("login", templateVars);
 });
 
 
