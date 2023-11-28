@@ -61,25 +61,31 @@ app.post("/urls/:id", (req, res) => {
 
 // For login
 app.post("/login", (req, res) => {
-  for (const key in users) {
-    if (users[key].email !== req.body.email) {
-      console.log(users[key].email, req.body.email);
-      res.status(403).send('Email does not exist');
+  const user = getUserByEmail(req.body.email);
+
+  if (!user) {
+    res.status(403).send('Email not found');
+  }
+
+  if (user) {
+    if (user.password !== req.body.password) {
+      res.status(403).send('Passwords do not match');
     }
   }
 
+  res.cookie('user_id', user.id) // Sends user id to cookie
   res.redirect("/urls");
 })
 
 // For logout
 app.post("/logout", (req, res) => {
-  res.clearCookie('user_id'); //this needs to change to users_id
+  res.clearCookie('user_id'); 
   res.redirect("/login");
 })
 
 // For register
-app.post("/register", (req, res) => { //this is where the random id generates
-  const ran = random();
+app.post("/register", (req, res) => { 
+  const ran = random(); //this is where the random id generates
   const user = {
     id: ran,
     email: req.body.email,
@@ -121,7 +127,7 @@ app.get("/urls", (req, res) => {
     user: users[user_id]
 
   };
-  console.log(users);
+  // console.log(users);
   res.render("urls_index", templateVars);
 });
 
