@@ -19,18 +19,18 @@ const users = {
   user2RandomID: { id: "user2RandomID", email: "user2@example.com", password: "dishwasher-funk" }
 };
 
-// const getUserByEmail = function(email) {
-//   for (const key in users) {
-//     if (users[key].email === user.email) {
-//       return user;
-//     }
-//   }
-//   return null;
-// }
+const getUserByEmail = function (email) {
+  for (const key in users) {
+    if (users[key].email === email) {
+      return users[key];
+    }
+  }
+  return null;
+};
 
 // Function that generates random strings
 const random = function generateRandomString() {
-  return Math.random().toString(36).substring(2,8);
+  return Math.random().toString(36).substring(2, 8);
 }
 
 // 
@@ -61,39 +61,45 @@ app.post("/urls/:id", (req, res) => {
 
 // For login
 app.post("/login", (req, res) => {
-  const user = req.body.user;
-  res.cookie('user_id', user); //this needs to change to users_id
+  for (const key in users) {
+    if (users[key].email !== req.body.email) {
+      console.log(users[key].email, req.body.email);
+      res.status(403).send('Email does not exist');
+    }
+  }
+
   res.redirect("/urls");
 })
 
 // For logout
 app.post("/logout", (req, res) => {
   res.clearCookie('user_id'); //this needs to change to users_id
-  res.redirect("/urls");
+  res.redirect("/login");
 })
 
 // For register
 app.post("/register", (req, res) => { //this is where the random id generates
   const ran = random();
   const user = {
-      id: ran,
-      email: req.body.email,
-      password: req.body.password
-    }
+    id: ran,
+    email: req.body.email,
+    password: req.body.password
+  }
 
+  // Send error if empty fields are submitted
   if (user.email === "" || user.password === "") {
     res.status(400).send('Empty email and/or password field');
   }
 
-  for (const key in users) {
-    if (users[key].email === user.email) {
-      res.status(400).send('Email already in use');
-    }
+  // Check is email has already been submitted
+  const matchedUser = getUserByEmail(req.body.email)
+  if (matchedUser) {
+    res.status(400).send('Email already exists');
   }
 
-  users[`${ran}`] = user;
-  console.log(users);
-  res.cookie('user_id', ran)
+  users[ran] = user;
+
+  res.cookie('user_id', ran) // Sends random() value to cookie
   res.redirect("/urls");
 })
 
@@ -110,22 +116,22 @@ app.get("/u/:id", (req, res) => {
 // My URLS page
 app.get("/urls", (req, res) => {
   let user_id = req.cookies["user_id"]
-  const templateVars = { 
+  const templateVars = {
     urls: urlDatabase,
     user: users[user_id]
-  
-  };
 
+  };
+  console.log(users);
   res.render("urls_index", templateVars);
 });
 
 // Create new tinyURL page
 app.get("/urls/new", (req, res) => {
   let user_id = req.cookies["user_id"]
-  const templateVars = { 
+  const templateVars = {
     urls: urlDatabase,
     user: users[user_id]
-  
+
   };
   res.render("urls_new", templateVars);
 });
@@ -133,36 +139,36 @@ app.get("/urls/new", (req, res) => {
 // Edit page
 app.get("/urls/:id", (req, res) => {
   let user_id = req.cookies["user_id"]
-  const templateVars = { 
-    id: req.params.id, 
+  const templateVars = {
+    id: req.params.id,
     longURL: urlDatabase[`${req.params.id}`],
     user: users[user_id]
-    };
+  };
   res.render("urls_show", templateVars);
 });
 
 // Register page
 app.get("/register", (req, res) => {
   let user_id = req.cookies["user_id"]
-  const templateVars = { 
-    id: req.params.id, 
+  const templateVars = {
+    id: req.params.id,
     longURL: urlDatabase[`${req.params.id}`],
     user: users[user_id]
-    };
-  
-    res.render("register", templateVars);
+  };
+
+  res.render("register", templateVars);
 });
 
 // Login page
 app.get("/login", (req, res) => {
   let user_id = req.cookies["user_id"]
-  const templateVars = { 
-    id: req.params.id, 
+  const templateVars = {
+    id: req.params.id,
     longURL: urlDatabase[`${req.params.id}`],
     user: users[user_id]
-    };
-  
-    res.render("login", templateVars);
+  };
+
+  res.render("login", templateVars);
 });
 
 
