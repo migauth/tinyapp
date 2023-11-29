@@ -18,6 +18,11 @@
   </head>
   <body>
     <%- include('partials/_header') %>
+    <% if (!user) { %>
+      <h3>Please log in to see URLS</h3>
+
+    <% } else { %>
+
     <main style="margin: 1em;">
       <h3>My URLs</h3>
       <table class="table">
@@ -34,7 +39,7 @@
             <form method="POST" action="/urls/<%= id %>/delete"> 
             <tr>
                 <td><%= id %></td>
-                <td><%= urls[id] %></td>
+                <td><%= urls[id].longURL %></td>
                 <td><a href="/urls/<%= id %>" class="btn btn-outline-primary">Edit</a></td>
                 <td><button type="submit" class="btn btn-outline-danger">Delete</button></td>
             </tr>
@@ -43,6 +48,7 @@
         </tbody>
       </table>
     </main>
+    <% } %>
     <!-- Bootstrap JS -->
     <script
       src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
