@@ -6,12 +6,17 @@ const cookieParser = require("cookie-parser")
 
 app.set("view engine", "ejs");
 
-
 // Sets a base object for the database
-let urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com",
-}
+const urlDatabase = {
+  b6UTxQ: {
+    longURL: "https://www.tsn.ca",
+    userID: "aJ48lW",
+  },
+  i3BoGr: {
+    longURL: "https://www.google.ca",
+    userID: "aJ48lW",
+  },
+};
 
 // Set a base object for users
 const users = {
@@ -39,25 +44,42 @@ app.use(cookieParser());
 
 //-----------------POSTS-------------------------
 
+//---URLS---//
 
 // Generates a random string for the id, updates the database with the id - longURL key value pair
 app.post("/urls", (req, res) => {
+  let user_id = req.cookies["user_id"]
+  const newURL = {
+    longURL: req.body.longURL,
+    userID: user_id
+  }
+  if (!user_id) {
+    res.send('Not logged in! Cannot short urls.');
+  }
   const ran = random();
-  urlDatabase[`${ran}`] = req.body.longURL;
+  urlDatabase[ran] = newURL;
+
   res.redirect(`/urls/${ran}`);
 });
 
 // For deleting urls
 app.post("/urls/:id/delete", (req, res) => {
-  delete urlDatabase[`${req.params.id}`];
+  delete urlDatabase[req.params.id];
   res.redirect("/urls");
 })
 
 // For editing urls
 app.post("/urls/:id", (req, res) => {
-  urlDatabase[`${req.params.id}`] = req.body.longURL
+  let id = req.params.id;
+  const newURL = {
+    longURL: req.body.longURL,
+    userID: id
+  }
+  urlDatabase[id] = newURL;
   res.redirect("/urls");
 })
+
+//---LOGIN/REGISTER---//
 
 // For login
 app.post("/login", (req, res) => {
@@ -79,12 +101,12 @@ app.post("/login", (req, res) => {
 
 // For logout
 app.post("/logout", (req, res) => {
-  res.clearCookie('user_id'); 
+  res.clearCookie('user_id');
   res.redirect("/login");
 })
 
 // For register
-app.post("/register", (req, res) => { 
+app.post("/register", (req, res) => {
   const ran = random(); //this is where the random id generates
   const user = {
     id: ran,
@@ -115,7 +137,15 @@ app.post("/register", (req, res) => {
 
 // Redirects user to longURL site when using id
 app.get("/u/:id", (req, res) => {
-  const longURL = urlDatabase[`${req.params.id}`];
+  const id = req.params.id;
+  const longURL = urlDatabase[id].longURL;
+
+  if (!longURL) { // Directly check if the longURL for the given id exists
+    // If the longURL does not exist, send a 400 error message and stop further execution
+    return res.status(400).send('URL not in database');
+  }
+
+  // If longURL exists, redirect to it
   res.redirect(longURL);
 });
 
@@ -134,6 +164,9 @@ app.get("/urls", (req, res) => {
 // Create new tinyURL page
 app.get("/urls/new", (req, res) => {
   let user_id = req.cookies["user_id"]
+  if (!user_id) {
+    res.redirect("/login");
+  }
   const templateVars = {
     urls: urlDatabase,
     user: users[user_id]
@@ -147,7 +180,7 @@ app.get("/urls/:id", (req, res) => {
   let user_id = req.cookies["user_id"]
   const templateVars = {
     id: req.params.id,
-    longURL: urlDatabase[`${req.params.id}`],
+    longURL: urlDatabase[req.params.id].longURL,
     user: users[user_id]
   };
   res.render("urls_show", templateVars);
@@ -156,9 +189,12 @@ app.get("/urls/:id", (req, res) => {
 // Register page
 app.get("/register", (req, res) => {
   let user_id = req.cookies["user_id"]
+  if (user_id) {
+    res.redirect("/urls");
+  }
   const templateVars = {
     id: req.params.id,
-    longURL: urlDatabase[`${req.params.id}`],
+    longURL: urlDatabase[req.params.id],
     user: users[user_id]
   };
 
@@ -168,13 +204,18 @@ app.get("/register", (req, res) => {
 // Login page
 app.get("/login", (req, res) => {
   let user_id = req.cookies["user_id"]
+  if (user_id) {
+    res.redirect("/urls");
+  }
   const templateVars = {
     id: req.params.id,
-    longURL: urlDatabase[`${req.params.id}`],
+    longURL: urlDatabase[req.params.id],
     user: users[user_id]
   };
 
   res.render("login", templateVars);
+
+
 });
 
 
