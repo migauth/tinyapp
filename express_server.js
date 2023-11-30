@@ -7,7 +7,7 @@ const cookieParser = require("cookie-parser")
 app.set("view engine", "ejs");
 
 // Sets a base object for the database
-const urlDatabase = {
+let urlDatabase = {
   b6UTxQ: {
     longURL: "https://www.tsn.ca",
     userID: "aJ48lW",
@@ -15,7 +15,7 @@ const urlDatabase = {
   i3BoGr: {
     longURL: "https://www.google.ca",
     userID: "aJ48lW",
-  },
+  }
 };
 
 // Set a base object for users
@@ -24,6 +24,17 @@ const users = {
   user2RandomID: { id: "user2RandomID", email: "user2@example.com", password: "dishwasher-funk" }
 };
 
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+
+//-----------------FUNCTIONS-------------------------
+
+// Function that generates random strings
+const random = function generateRandomString() {
+  return Math.random().toString(36).substring(2, 8);
+};
+
+// Returns object if email matches and null if not
 const getUserByEmail = function (email) {
   for (const key in users) {
     if (users[key].email === email) {
@@ -33,14 +44,17 @@ const getUserByEmail = function (email) {
   return null;
 };
 
-// Function that generates random strings
-const random = function generateRandomString() {
-  return Math.random().toString(36).substring(2, 8);
-}
-
-// 
-app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser());
+// Returns URLs if matching user
+const urlsForUser = function (id) {
+  let newUrlDatabase = {};
+  for (const key in urlDatabase) {
+    if (urlDatabase[key].userID === id) {
+      newUrlDatabase[key] = urlDatabase[key]
+    }
+  }
+  return newUrlDatabase;
+};
+console.log(urlsForUser('aJ48lW'))
 
 //-----------------POSTS-------------------------
 
@@ -53,31 +67,62 @@ app.post("/urls", (req, res) => {
     longURL: req.body.longURL,
     userID: user_id
   }
+
   if (!user_id) {
-    res.send('Not logged in! Cannot short urls.');
+    res.status(400).send('Not logged in! Cannot shorten urls.');
   }
+
   const ran = random();
   urlDatabase[ran] = newURL;
-
+  console.log(urlDatabase);
   res.redirect(`/urls/${ran}`);
 });
 
 // For deleting urls
 app.post("/urls/:id/delete", (req, res) => {
-  delete urlDatabase[req.params.id];
-  res.redirect("/urls");
-})
+  let user_id = req.cookies["user_id"]
+  let id = req.params.id;
+
+  if (!user_id) {
+    return res.status(400).send('Cannot delete - wrong user id!');
+  }
+
+  if (!urlDatabase[id]) {
+    return res.status(404).send("URL not found");
+  }
+
+  if (user_id === urlDatabase[id].userID) {
+    delete urlDatabase[id];
+    return res.redirect("/urls");
+  } else {
+    return res.status(403).send("You do not have authorization to delete this");
+  }
+});
 
 // For editing urls
 app.post("/urls/:id", (req, res) => {
+  let user_id = req.cookies["user_id"]
   let id = req.params.id;
-  const newURL = {
-    longURL: req.body.longURL,
-    userID: id
+
+  if (!user_id) {
+    res.status(400).send('Cannot edit - wrong user id!');
   }
-  urlDatabase[id] = newURL;
-  res.redirect("/urls");
-})
+
+  if (!urlDatabase[id]) {
+    return res.status(404).send("URL not found");
+  }
+
+  if (user_id === urlDatabase[id].userID) {
+    const newURL = {
+      longURL: req.body.longURL,
+      userID: urlDatabase[id].userID
+    }
+    urlDatabase[id] = newURL;
+    return res.redirect("/urls");
+  } else {
+    return res.status(403).send("You do not have authorization to edit this");
+  }
+});
 
 //---LOGIN/REGISTER---//
 
@@ -93,9 +138,9 @@ app.post("/login", (req, res) => {
     if (user.password !== req.body.password) {
       res.status(403).send('Passwords do not match');
     }
+    res.cookie('user_id', user.id) // Sends user id to cookie
   }
 
-  res.cookie('user_id', user.id) // Sends user id to cookie
   res.redirect("/urls");
 })
 
@@ -152,12 +197,18 @@ app.get("/u/:id", (req, res) => {
 // My URLS page
 app.get("/urls", (req, res) => {
   let user_id = req.cookies["user_id"]
+  if (user_id) {
+    const templateVars = {
+      urls: urlsForUser(user_id),
+      user: users[user_id]
+    };
+    res.render("urls_index", templateVars);
+  }
   const templateVars = {
     urls: urlDatabase,
     user: users[user_id]
 
   };
-  // console.log(users);
   res.render("urls_index", templateVars);
 });
 
@@ -178,6 +229,17 @@ app.get("/urls/new", (req, res) => {
 // Edit page
 app.get("/urls/:id", (req, res) => {
   let user_id = req.cookies["user_id"]
+  const id = req.params.id;
+  const databaseID = urlDatabase[id].userID;
+
+  if (!user_id) {
+    res.send('Not logged in!');
+  }
+
+  if (databaseID !== user_id) {
+    res.send('wrong permissions')
+  }
+
   const templateVars = {
     id: req.params.id,
     longURL: urlDatabase[req.params.id].longURL,
