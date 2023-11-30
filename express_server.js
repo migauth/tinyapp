@@ -2,7 +2,8 @@ const express = require("express");
 const app = express();
 const PORT = 8080;
 
-const cookieParser = require("cookie-parser")
+const cookieParser = require("cookie-parser");
+const bcrypt = require("bcryptjs");
 
 app.set("view engine", "ejs");
 
@@ -69,12 +70,12 @@ app.post("/urls", (req, res) => {
   }
 
   if (!user_id) {
-    res.status(400).send('Not logged in! Cannot shorten urls.');
+    return res.status(400).send('Not logged in! Cannot shorten urls.');
   }
 
   const ran = random();
   urlDatabase[ran] = newURL;
-  console.log(urlDatabase);
+  // console.log(urlDatabase);
   res.redirect(`/urls/${ran}`);
 });
 
@@ -105,7 +106,7 @@ app.post("/urls/:id", (req, res) => {
   let id = req.params.id;
 
   if (!user_id) {
-    res.status(400).send('Cannot edit - wrong user id!');
+    return res.status(400).send('Cannot edit - wrong user id!');
   }
 
   if (!urlDatabase[id]) {
@@ -130,18 +131,26 @@ app.post("/urls/:id", (req, res) => {
 app.post("/login", (req, res) => {
   const user = getUserByEmail(req.body.email);
 
+  console.log(bcrypt.compareSync(req.body.password, user.password));
+  // console.log(user.password);
+
   if (!user) {
-    res.status(403).send('Email not found');
+    return res.status(403).send('Email not found');
   }
 
   if (user) {
-    if (user.password !== req.body.password) {
-      res.status(403).send('Passwords do not match');
+    if (bcrypt.compareSync(req.body.password, user.password) === false) {
+      return res.status(403).send('Passwords do not match');
     }
-    res.cookie('user_id', user.id) // Sends user id to cookie
   }
 
-  res.redirect("/urls");
+  if (user) {
+    if (bcrypt.compareSync(req.body.password, user.password) === true) {
+      res.cookie('user_id', user.id) // Sends user id to cookie
+      res.redirect("/urls");
+    }
+  }
+  // console.log(users);
 })
 
 // For logout
@@ -153,24 +162,30 @@ app.post("/logout", (req, res) => {
 // For register
 app.post("/register", (req, res) => {
   const ran = random(); //this is where the random id generates
+
+  const password = req.body.password; // found in the req.body object
+  const hashedPassword = bcrypt.hashSync(password, 10);
+  // console.log(hashedPassword);
+
   const user = {
     id: ran,
     email: req.body.email,
-    password: req.body.password
+    password: hashedPassword //this has to change to hashedPassword
   }
 
   // Send error if empty fields are submitted
   if (user.email === "" || user.password === "") {
-    res.status(400).send('Empty email and/or password field');
+    return res.status(400).send('Empty email and/or password field');
   }
 
   // Check is email has already been submitted
   const matchedUser = getUserByEmail(req.body.email)
   if (matchedUser) {
-    res.status(400).send('Email already exists');
+    return res.status(400).send('Email already exists');
   }
 
   users[ran] = user;
+  // console.log(users);
 
   res.cookie('user_id', ran) // Sends random() value to cookie
   res.redirect("/urls");
@@ -202,7 +217,7 @@ app.get("/urls", (req, res) => {
       urls: urlsForUser(user_id),
       user: users[user_id]
     };
-    res.render("urls_index", templateVars);
+    return res.render("urls_index", templateVars);
   }
   const templateVars = {
     urls: urlDatabase,
@@ -216,7 +231,7 @@ app.get("/urls", (req, res) => {
 app.get("/urls/new", (req, res) => {
   let user_id = req.cookies["user_id"]
   if (!user_id) {
-    res.redirect("/login");
+    return res.redirect("/login");
   }
   const templateVars = {
     urls: urlDatabase,
@@ -233,11 +248,11 @@ app.get("/urls/:id", (req, res) => {
   const databaseID = urlDatabase[id].userID;
 
   if (!user_id) {
-    res.send('Not logged in!');
+    return res.send('Not logged in!');
   }
 
   if (databaseID !== user_id) {
-    res.send('wrong permissions')
+    return res.send('wrong permissions')
   }
 
   const templateVars = {
@@ -252,7 +267,7 @@ app.get("/urls/:id", (req, res) => {
 app.get("/register", (req, res) => {
   let user_id = req.cookies["user_id"]
   if (user_id) {
-    res.redirect("/urls");
+    return res.redirect("/urls");
   }
   const templateVars = {
     id: req.params.id,
@@ -267,7 +282,7 @@ app.get("/register", (req, res) => {
 app.get("/login", (req, res) => {
   let user_id = req.cookies["user_id"]
   if (user_id) {
-    res.redirect("/urls");
+    return res.redirect("/urls");
   }
   const templateVars = {
     id: req.params.id,
