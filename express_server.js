@@ -2,7 +2,6 @@ const express = require("express");
 const app = express();
 const PORT = 8080;
 
-// const cookieParser = require("cookie-parser");
 const cookieSession = require("cookie-session");
 const bcrypt = require("bcryptjs");
 
@@ -37,6 +36,7 @@ app.use(cookieSession({
 
 //-----------------FUNCTIONS-------------------------
 
+// Import functions
 const { getUserByEmail, random } = require('./helpers');
 
 // Returns URLs if matching user
@@ -123,10 +123,12 @@ app.post("/urls/:id", (req, res) => {
 app.post("/login", (req, res) => {
   const user = getUserByEmail(req.body.email, users);
 
+  // Check if user exists
   if (!user) {
     return res.status(403).send('Email not found');
   }
 
+  // Check if correct password
   if (user) {
     if (bcrypt.compareSync(req.body.password, user.password) === false) {
       return res.status(403).send('Passwords do not match');
@@ -186,6 +188,7 @@ app.get("/u/:id", (req, res) => {
   const id = req.params.id;
   const longURL = urlDatabase[id].longURL;
 
+  // Check if longURL exists
   if (!longURL) {
     return res.status(400).send('URL not in database');
   }
@@ -197,6 +200,7 @@ app.get("/u/:id", (req, res) => {
 app.get("/urls", (req, res) => {
   let userId = req.session.userId;
 
+  // Filter URLs for matching user
   if (userId) {
     const templateVars = {
       urls: urlsForUser(userId),
@@ -217,6 +221,7 @@ app.get("/urls", (req, res) => {
 app.get("/urls/new", (req, res) => {
   let userId = req.session.userId;
 
+  // Can't add new URLs if not logged in
   if (!userId) {
     return res.redirect("/login");
   }
@@ -235,12 +240,14 @@ app.get("/urls/:id", (req, res) => {
   const id = req.params.id;
   const databaseID = urlDatabase[id].userID;
 
+  // Check if loggin in
   if (!userId) {
     return res.send('Not logged in!');
   }
 
+  // Can't edit if wrong user
   if (databaseID !== userId) {
-    return res.send('wrong permissions');
+    return res.send('Wrong permissions');
   }
 
   const templateVars = {
