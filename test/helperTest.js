@@ -24,9 +24,6 @@ describe('getUserByEmail', function() {
 
   it('should return null with invalid email', function() {
     const user = getUserByEmail("nobody@example.com", testUsers)
-    // const expectedUserID = "userRandomID";
     assert(user === null)
   });
-
-
 });
