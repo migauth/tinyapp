@@ -2,7 +2,7 @@ const express = require("express");
 const app = express();
 const PORT = 8080;
 
-const cookieParser = require("cookie-parser");
+// const cookieParser = require("cookie-parser");
 const cookieSession = require("cookie-session");
 const bcrypt = require("bcryptjs");
 
@@ -27,7 +27,7 @@ const users = {
 };
 
 app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser());
+// app.use(cookieParser());
 app.use(cookieSession({
   name: 'session',
   keys: ['key1', 'key2'],
@@ -41,19 +41,11 @@ console.log();
 
 //-----------------FUNCTIONS-------------------------
 
+const { getUserByEmail } = require('./helpers')
+
 // Function that generates random strings
 const random = function generateRandomString() {
   return Math.random().toString(36).substring(2, 8);
-};
-
-// Returns object if email matches and null if not
-const getUserByEmail = function (email) {
-  for (const key in users) {
-    if (users[key].email === email) {
-      return users[key];
-    }
-  }
-  return null;
 };
 
 // Returns URLs if matching user
@@ -145,7 +137,7 @@ app.post("/urls/:id", (req, res) => {
 
 // For login
 app.post("/login", (req, res) => {
-  const user = getUserByEmail(req.body.email);
+  const user = getUserByEmail(req.body.email, users);
   // console.log(user);
   // console.log(bcrypt.compareSync(req.body.password, user.password));
   // console.log(user.password);
@@ -197,7 +189,7 @@ app.post("/register", (req, res) => {
   }
 
   // Check is email has already been submitted
-  const matchedUser = getUserByEmail(req.body.email)
+  const matchedUser = getUserByEmail(req.body.email, users)
   if (matchedUser) {
     return res.status(400).send('Email already exists');
   }
