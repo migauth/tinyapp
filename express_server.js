@@ -186,13 +186,13 @@ app.post("/register", (req, res) => {
 // Redirects user to longURL site when using id
 app.get("/u/:id", (req, res) => {
   const id = req.params.id;
-  const longURL = urlDatabase[id].longURL;
 
   // Check if longURL exists
-  if (!longURL) {
-    return res.status(400).send('URL not in database');
+  if (!urlDatabase[id]) {
+    return res.status(400).send('Short URL not in database');
   }
 
+  const longURL = urlDatabase[id].longURL;
   res.redirect(longURL);
 });
 
