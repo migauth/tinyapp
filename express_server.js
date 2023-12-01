@@ -50,7 +50,7 @@ const urlsForUser = function(id) {
   return newUrlDatabase;
 };
 
-//-----------------POSTS-------------------------
+//-----------------POST ROUTES-------------------------
 
 //---URLS---//
 
@@ -181,7 +181,7 @@ app.post("/register", (req, res) => {
 
 
 
-//-----------------GETS-------------------------
+//-----------------GET ROUTES-------------------------
 
 // Redirects user to longURL site when using id
 app.get("/u/:id", (req, res) => {
