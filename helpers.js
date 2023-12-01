@@ -8,4 +8,9 @@ const getUserByEmail = function (email, database) {
   return null;
 };
 
-module.exports = { getUserByEmail };
+// Function that generates random strings
+const random = () => {
+  return Math.random().toString(36).substring(2, 8);
+};
+
+module.exports = { getUserByEmail, random };
