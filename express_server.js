@@ -80,6 +80,7 @@ app.post("/urls", (req, res) => {
     return res.status(400).send('Not logged in! Cannot shorten urls.');
   }
 
+  // Create a new URL
   const ran = random();
   urlDatabase[ran] = newURL;
   res.redirect(`/urls/${ran}`);
@@ -163,8 +164,7 @@ app.post("/login", (req, res) => {
 
 // For logout
 app.post("/logout", (req, res) => {
-  res.clearCookie('session');
-  res.clearCookie('session.sig');
+  req.session = null;
   res.redirect("/login");
 });
 
@@ -174,6 +174,7 @@ app.post("/register", (req, res) => {
   const password = req.body.password;
   const hashedPassword = bcrypt.hashSync(password, 10);
 
+  // Create a new user
   const user = {
     id: ran,
     email: req.body.email,
