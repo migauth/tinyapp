@@ -1,14 +1,18 @@
+// Server for Tinyapp
+
+// Import express
 const express = require("express");
 const app = express();
 const PORT = 8080;
 
+// Import cookieSession and bcrypt for encryption
 const cookieSession = require("cookie-session");
 const bcrypt = require("bcryptjs");
 
 app.set("view engine", "ejs");
 
 // Sets a base object for the database
-let urlDatabase = {
+const urlDatabase = {
   b6UTxQ: {
     longURL: "https://www.tsn.ca",
     userID: "aJ48lW",
@@ -21,10 +25,19 @@ let urlDatabase = {
 
 // Set a base object for users
 const users = {
-  userRandomID: { id: "userRandomID", email: "user@example.com", password: "purple-monkey-dinosaur" },
-  user2RandomID: { id: "user2RandomID", email: "user2@example.com", password: "dishwasher-funk" }
+  userRandomID: {
+    id: "userRandomID",
+    email: "user@example.com",
+    password: "purple-monkey-dinosaur"
+  },
+  user2RandomID: {
+    id: "user2RandomID",
+    email: "user2@example.com",
+    password: "dishwasher-funk"
+  }
 };
 
+// Setup for cookie encryption
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieSession({
   name: 'session',
@@ -40,8 +53,8 @@ app.use(cookieSession({
 const { getUserByEmail, random } = require('./helpers');
 
 // Returns URLs if matching user
-const urlsForUser = function(id) {
-  let newUrlDatabase = {};
+const urlsForUser = function (id) {
+  const newUrlDatabase = {};
   for (const key in urlDatabase) {
     if (urlDatabase[key].userID === id) {
       newUrlDatabase[key] = urlDatabase[key];
@@ -56,12 +69,13 @@ const urlsForUser = function(id) {
 
 // Generates a random string for the id, updates the database with the id - longURL key value pair
 app.post("/urls", (req, res) => {
-  let userId = req.session.userId;
+  const userId = req.session.userId;
   const newURL = {
     longURL: req.body.longURL,
     userID: userId
   };
 
+  // Check if user is logged in
   if (!userId) {
     return res.status(400).send('Not logged in! Cannot shorten urls.');
   }
@@ -73,13 +87,15 @@ app.post("/urls", (req, res) => {
 
 // For deleting urls
 app.post("/urls/:id/delete", (req, res) => {
-  let userId = req.session.userId;
-  let id = req.params.id;
+  const userId = req.session.userId;
+  const id = req.params.id;
 
+  // Check if correct user
   if (!userId) {
     return res.status(400).send('Cannot delete - wrong user id!');
   }
 
+  // Check if URL is in database
   if (!urlDatabase[id]) {
     return res.status(404).send("URL not found");
   }
@@ -94,13 +110,15 @@ app.post("/urls/:id/delete", (req, res) => {
 
 // For editing urls
 app.post("/urls/:id", (req, res) => {
-  let userId = req.session.userId;
-  let id = req.params.id;
+  const userId = req.session.userId;
+  const id = req.params.id;
 
+  // Check if correct user
   if (!userId) {
     return res.status(400).send('Cannot edit - wrong user id!');
   }
 
+  // Check if URL is in database
   if (!urlDatabase[id]) {
     return res.status(404).send("URL not found");
   }
@@ -198,7 +216,7 @@ app.get("/u/:id", (req, res) => {
 
 // My URLS page
 app.get("/urls", (req, res) => {
-  let userId = req.session.userId;
+  const userId = req.session.userId;
 
   // Filter URLs for matching user
   if (userId) {
@@ -219,7 +237,7 @@ app.get("/urls", (req, res) => {
 
 // Create new tinyURL page
 app.get("/urls/new", (req, res) => {
-  let userId = req.session.userId;
+  const userId = req.session.userId;
 
   // Can't add new URLs if not logged in
   if (!userId) {
@@ -236,7 +254,7 @@ app.get("/urls/new", (req, res) => {
 
 // Edit page
 app.get("/urls/:id", (req, res) => {
-  let userId = req.session.userId;
+  const userId = req.session.userId;
   const id = req.params.id;
   const databaseID = urlDatabase[id].userID;
 
@@ -261,7 +279,7 @@ app.get("/urls/:id", (req, res) => {
 
 // Register page
 app.get("/register", (req, res) => {
-  let userId = req.session.userId;
+  const userId = req.session.userId;
 
   if (userId) {
     return res.redirect("/urls");
@@ -278,7 +296,7 @@ app.get("/register", (req, res) => {
 
 // Login page
 app.get("/login", (req, res) => {
-  let userId = req.session.userId;
+  const userId = req.session.userId;
 
   if (userId) {
     return res.redirect("/urls");
@@ -297,6 +315,7 @@ app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
 
+// Listen for connection
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
