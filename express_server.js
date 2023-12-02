@@ -124,6 +124,7 @@ app.post("/urls/:id", (req, res) => {
     return res.status(404).send("URL not found");
   }
 
+  // If correct user allow editing
   if (userId === urlDatabase[id].userID) {
     const newURL = {
       longURL: req.body.longURL,
@@ -154,6 +155,7 @@ app.post("/login", (req, res) => {
     }
   }
 
+  // Login if user exists and password matches
   if (user) {
     if (bcrypt.compareSync(req.body.password, user.password) === true) {
       req.session.userId = user.id; //Set cookie session
@@ -192,6 +194,7 @@ app.post("/register", (req, res) => {
     return res.status(400).send('Email already exists');
   }
 
+  // Assign random id to new user
   users[ran] = user;
 
   req.session.userId = ran; //Set cookie session
@@ -312,6 +315,7 @@ app.get("/login", (req, res) => {
   res.render("login", templateVars);
 });
 
+// Fetch JSON data
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });

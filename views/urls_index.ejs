@@ -20,9 +20,9 @@
 
   <body>
     <%- include('partials/_header') %>
-    <% if (!user) { %>
+    <% if (!user) { %> <!-- Test if logged in -->
       <h3 style="margin: 1em;">Please log in to see URLS</h3>
-    <% } else { %>
+    <% } else { %> <!-- Display if logged in -->
     <main style="margin: 1em;">
       <h3>My URLs</h3>
       <table class="table">
@@ -38,8 +38,8 @@
           <% for (let id in urls) { %>
             <form method="POST" action="/urls/<%= id %>/delete"> <!--For delete-->
             <tr>
-                <td><a href="/u/<%= id %>"><%= id %></a></td>
-                <td><%= urls[id].longURL %></td>
+                <td><a href="/u/<%= id %>"><%= id %></a></td> <!-- Display short URL -->
+                <td><%= urls[id].longURL %></td> <!-- Display long URL -->
                 <td><a href="/urls/<%= id %>" class="btn btn-outline-primary">Edit</a></td>
                 <td><button type="submit" class="btn btn-outline-danger">Delete</button></td>
             </tr>
