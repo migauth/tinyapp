@@ -1,7 +1,10 @@
-const { assert } = require('chai');
+// Test file for helper functions
 
+// Import chai and functions
+const { assert } = require('chai');
 const { getUserByEmail } = require('../helpers');
 
+// Base template for testing
 const testUsers = {
   "userRandomID": {
     id: "userRandomID",
