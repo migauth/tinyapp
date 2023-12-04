@@ -205,6 +205,16 @@ app.post("/register", (req, res) => {
 
 //-----------------GET ROUTES-------------------------
 
+// Redirects user to /urls if logged in - to /login if not
+
+app.get("/", (req, res) => {
+  const userId = req.session.userId;
+  if (userId) {
+    return res.redirect("/urls");
+  }
+  return res.redirect("/login");
+})
+
 // Redirects user to longURL site when using id
 app.get("/u/:id", (req, res) => {
   const id = req.params.id;
@@ -260,8 +270,14 @@ app.get("/urls/new", (req, res) => {
 app.get("/urls/:id", (req, res) => {
   const userId = req.session.userId;
   const id = req.params.id;
+  
+  // Check if longURL exists
+  if (!urlDatabase[id]) {
+    return res.status(400).send('Short URL not in database');
+  }
+  
   const databaseID = urlDatabase[id].userID;
-
+  
   // Check if loggin in
   if (!userId) {
     return res.send('Not logged in!');
