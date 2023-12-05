@@ -75,8 +75,10 @@ app.post("/urls", (req, res) => {
     userID: userId
   };
 
+  const user = users[userId];
+
   // Check if user is logged in
-  if (!userId) {
+  if (!user) {
     return res.status(400).send('Not logged in! Cannot shorten urls.');
   }
 
@@ -90,9 +92,10 @@ app.post("/urls", (req, res) => {
 app.post("/urls/:id/delete", (req, res) => {
   const userId = req.session.userId;
   const id = req.params.id;
+  const user = users[userId];
 
   // Check if correct user
-  if (!userId) {
+  if (!user) {
     return res.status(400).send('Cannot delete - wrong user id!');
   }
 
@@ -113,9 +116,10 @@ app.post("/urls/:id/delete", (req, res) => {
 app.post("/urls/:id", (req, res) => {
   const userId = req.session.userId;
   const id = req.params.id;
+  const user = users[userId];
 
   // Check if correct user
-  if (!userId) {
+  if (!user) {
     return res.status(400).send('Cannot edit - wrong user id!');
   }
 
@@ -182,9 +186,9 @@ app.post("/register", (req, res) => {
     email: req.body.email,
     password: hashedPassword
   };
-
+  
   // Send error if empty fields are submitted
-  if (user.email === "" || user.password === "") {
+  if (user.email === "" || password === "") {
     return res.status(400).send('Empty email and/or password field');
   }
 
@@ -209,7 +213,9 @@ app.post("/register", (req, res) => {
 
 app.get("/", (req, res) => {
   const userId = req.session.userId;
-  if (userId) {
+  const user = users[userId];
+
+  if (user) {
     return res.redirect("/urls");
   }
   return res.redirect("/login");
@@ -231,37 +237,31 @@ app.get("/u/:id", (req, res) => {
 // My URLS page
 app.get("/urls", (req, res) => {
   const userId = req.session.userId;
+  const user = users[userId];
 
   // Filter URLs for matching user
-  if (userId) {
+  if (user) {
     const templateVars = {
       urls: urlsForUser(userId),
-      user: users[userId]
+      user
     };
     return res.render("urls_index", templateVars);
   }
 
-  const templateVars = {
-    urls: urlDatabase,
-    user: users[userId]
-  };
-
-  res.render("urls_index", templateVars);
+  res.redirect("/login");
 });
 
 // Create new tinyURL page
 app.get("/urls/new", (req, res) => {
   const userId = req.session.userId;
+  const user = users[userId];
 
   // Can't add new URLs if not logged in
-  if (!userId) {
+  if (!user) {
     return res.redirect("/login");
   }
 
-  const templateVars = {
-    urls: urlDatabase,
-    user: users[userId]
-  };
+  const templateVars = { user };
 
   res.render("urls_new", templateVars);
 });
@@ -269,30 +269,27 @@ app.get("/urls/new", (req, res) => {
 // Edit page
 app.get("/urls/:id", (req, res) => {
   const userId = req.session.userId;
-  const id = req.params.id;
-  
-  // Check if longURL exists
-  if (!urlDatabase[id]) {
-    return res.status(400).send('Short URL not in database');
-  }
-  
-  const databaseID = urlDatabase[id].userID;
-  
+  const user = users[userId]
+
   // Check if loggin in
-  if (!userId) {
+  if (!user) {
     return res.send('Not logged in!');
   }
 
+  const id = req.params.id;
+  const url = urlDatabase[id];
+  
+  // Check if longURL exists
+  if (!url) {
+    return res.status(400).send('Short URL not in database');
+  }
+  
   // Can't edit if wrong user
-  if (databaseID !== userId) {
+  if (url.userID !== userId) {
     return res.send('Wrong permissions');
   }
 
-  const templateVars = {
-    id: req.params.id,
-    longURL: urlDatabase[req.params.id].longURL,
-    user: users[userId]
-  };
+  const templateVars = { url, user, id };
 
   res.render("urls_show", templateVars);
 });
@@ -300,16 +297,13 @@ app.get("/urls/:id", (req, res) => {
 // Register page
 app.get("/register", (req, res) => {
   const userId = req.session.userId;
+  const user = users[userId];
 
-  if (userId) {
+  if (user) {
     return res.redirect("/urls");
   }
 
-  const templateVars = {
-    id: req.params.id,
-    longURL: urlDatabase[req.params.id],
-    user: users[userId]
-  };
+  const templateVars = { user };
 
   res.render("register", templateVars);
 });
@@ -317,16 +311,13 @@ app.get("/register", (req, res) => {
 // Login page
 app.get("/login", (req, res) => {
   const userId = req.session.userId;
+  const user = users[userId];
 
-  if (userId) {
+  if (user) {
     return res.redirect("/urls");
   }
 
-  const templateVars = {
-    id: req.params.id,
-    longURL: urlDatabase[req.params.id],
-    user: users[userId]
-  };
+  const templateVars = { user };
 
   res.render("login", templateVars);
 });
